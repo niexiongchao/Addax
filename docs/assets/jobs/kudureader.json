@@ -13,13 +13,15 @@
       "reader": {
         "name": "kudureader",
         "parameter": {
-          "masterAddress": "localhost:7051,localhost:7151,localhost:7251",
-          "table": "users",
-          "splitPk": "user_id",
+          "masterAddress": "10.110.37.210:7051,10.110.37.221:7051,10.110.37.222:7051",
+          "table": "impala::temp.datax_kudu_test",
+          "splitPk": "userid",
           "lowerBound": 1,
-          "upperBound": 100,
+          "upperBound": 100000000,
           "readTimeout": 5,
-          "scanTimeout": 10
+          "scanTimeout": 10,
+          "column": ["userid","username","time"],
+          "where": "userid in (1,2,3)"
         }
       },
       "writer": {

@@ -54,8 +54,10 @@ public class DoubleColumn
      */
     public DoubleColumn( Double data)
     {
-        this(data == null ? null
-                : new BigDecimal(String.valueOf(data)).toPlainString());
+            this(data == null || data.isInfinite() ? null
+                    : new BigDecimal(String.valueOf(data)).toPlainString());
+
+
     }
 
     /**
