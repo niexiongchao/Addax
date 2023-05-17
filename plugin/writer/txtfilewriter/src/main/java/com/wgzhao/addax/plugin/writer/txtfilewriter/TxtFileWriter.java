@@ -38,20 +38,9 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
-import static com.wgzhao.addax.common.base.Key.COMPRESS;
-import static com.wgzhao.addax.common.base.Key.DATE_FORMAT;
-import static com.wgzhao.addax.common.base.Key.FILE_FORMAT;
-import static com.wgzhao.addax.common.base.Key.FILE_NAME;
-import static com.wgzhao.addax.common.base.Key.FORMAT;
-import static com.wgzhao.addax.common.base.Key.PATH;
-import static com.wgzhao.addax.common.base.Key.WRITE_MODE;
+import static com.wgzhao.addax.common.base.Key.*;
 
 /**
  * Created by haiwei.luo on 14-9-17.
@@ -113,8 +102,10 @@ public class TxtFileWriter
         @Override
         public void prepare()
         {
+
             String path = this.writerSliceConfig.getString(Key.PATH);
             String fileName = this.writerSliceConfig.getString(FILE_NAME);
+            LOG.info("filename:[{}]", fileName);
             String writeMode = this.writerSliceConfig.getString(WRITE_MODE);
 
             assert FileHelper.checkDirectoryWritable(path);
@@ -201,16 +192,29 @@ public class TxtFileWriter
         {
             Set<String> allFiles;
             String path = null;
+            String format = null;
+            String fileName = null;
             try {
                 path = this.writerSliceConfig.getString(Key.PATH);
                 File dir = new File(path);
                 allFiles = new HashSet<>(Arrays.asList(Objects.requireNonNull(dir.list())));
+                 format = this.writerSliceConfig.getString(FILE_FORMAT);
+                 fileName = this.writerSliceConfig.getString(FILE_NAME);
             }
             catch (SecurityException se) {
                 throw AddaxException.asAddaxException(TxtFileWriterErrorCode.SECURITY_NOT_ENOUGH,
                         String.format("您没有权限查看目录 : [%s]", path));
             }
-            return StorageWriterUtil.split(writerSliceConfig, allFiles, mandatoryNumber);
+            if(mandatoryNumber==1){
+                File newFile = new File(path,fileName+"."+format);
+                if(newFile.exists()){
+                    LOG.info("文件已存在，不加header");
+                    this.writerSliceConfig.set(HEADER,null);
+                }
+                return Collections.singletonList(this.writerSliceConfig);
+
+            }
+            return StorageWriterUtil.split(this.writerSliceConfig, allFiles, mandatoryNumber);
         }
     }
 
@@ -239,24 +243,25 @@ public class TxtFileWriter
         public void prepare()
         {
             String compress = this.writerSliceConfig.getString(COMPRESS);
-            suffix = FileHelper.getCompressFileSuffix(compress);
 
             this.fileName = this.fileName + "." + this.fileFormat;
+            LOG.info("prepare:filename:[{}]", this.fileName);
         }
 
         @Override
         public void startWrite(RecordReceiver lineReceiver)
         {
             LOG.info("begin do write...");
-            String fileFullPath = StorageWriterUtil.buildFilePath(this.path, this.fileName, this.suffix);
-            LOG.info("write to file : [{}]", fileFullPath);
+            String fileFullPath = StorageWriterUtil.buildFilePath(this.path, this.fileName, "");
+            LOG.info("filename:[{}]", this.fileName);
 
             OutputStream outputStream = null;
 
             try {
                 File newFile = new File(fileFullPath);
                 assert newFile.createNewFile();
-                outputStream = new FileOutputStream(newFile);
+                outputStream = new FileOutputStream(newFile,true);
+                outputStream.write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
                 StorageWriterUtil.writeToStream(lineReceiver, outputStream, this.writerSliceConfig, this.fileName,
                         this.getTaskPluginCollector());
             }

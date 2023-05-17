@@ -27,6 +27,7 @@ import com.wgzhao.addax.common.compress.ZipCycleOutputStream;
 import com.wgzhao.addax.common.element.Column;
 import com.wgzhao.addax.common.element.DateColumn;
 import com.wgzhao.addax.common.element.Record;
+import com.wgzhao.addax.common.element.TimestampColumn;
 import com.wgzhao.addax.common.exception.AddaxException;
 import com.wgzhao.addax.common.plugin.RecordReceiver;
 import com.wgzhao.addax.common.plugin.TaskPluginCollector;
@@ -203,6 +204,7 @@ public class StorageWriterUtil
         // compress logic
         try {
             if (null == compress) {
+                outputStream.write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
                 writer = new BufferedWriter(new OutputStreamWriter(outputStream, encoding));
             }
             else {
@@ -321,7 +323,8 @@ public class StorageWriterUtil
                     }
                     else {
                         // warn: it's all ok if nullFormat is null
-                        boolean isDateColumn = column instanceof DateColumn;
+                        boolean isDateColumn = column instanceof TimestampColumn || column instanceof DateColumn;
+                        LOG.debug("isDateColumn: {}", isDateColumn);
                         if (!isDateColumn) {
                             splitRows.add(column.asString());
                         }
