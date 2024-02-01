@@ -5,17 +5,13 @@ import com.wgzhao.addax.common.exception.CommonErrorCode;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.Date;
 
 public class TimestampColumn
     extends Column
 {
+    private final String errorTemplate = "Timestamp type cannot be converted to %s.";
     public TimestampColumn(Object object, Type type, int byteSize)
     {
         super(object, type, byteSize);
@@ -95,28 +91,24 @@ public class TimestampColumn
     @Override
     public byte[] asBytes()
     {
-        throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Timestamp类型不能转为Bytes .");
+        throw AddaxException.asAddaxException(CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "Bytes"));
     }
 
     @Override
     public Boolean asBoolean()
     {
-        throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Timestamp类型不能转为Boolean .");
+        throw AddaxException.asAddaxException(CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "Boolean"));
     }
 
     @Override
     public BigDecimal asBigDecimal()
     {
-        throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Timestamp类型不能转为BigDecimal .");
+        throw AddaxException.asAddaxException(CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "BigDecimal"));
     }
 
     @Override
     public BigInteger asBigInteger()
     {
-        throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Timestamp类型不能转为BigInteger .");
+        throw AddaxException.asAddaxException(CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "BigInteger"));
     }
 }

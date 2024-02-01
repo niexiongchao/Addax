@@ -25,13 +25,12 @@ import com.wgzhao.addax.core.util.container.CoreConstant;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.StringUtils;
 
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 public final class JobAssignUtil
 {
@@ -77,7 +76,7 @@ public final class JobAssignUtil
                         CommonConstant.LOAD_BALANCE_RESOURCE_MARK, "aFakeResourceMarkForLoadBalance");
             }
             // 是为了避免某些插件没有设置 资源标识 而进行了一次随机打乱操作
-            Collections.shuffle(contentConfig, new Random(System.currentTimeMillis()));
+            Collections.shuffle(contentConfig, new SecureRandom());
         }
 
         LinkedHashMap<String, List<Integer>> resourceMarkAndTaskIdMap = parseAndGetResourceMarkAndTaskIdMap(contentConfig);
@@ -123,12 +122,12 @@ public final class JobAssignUtil
             int taskId = aTaskConfig.getInt(CoreConstant.TASK_ID);
             // 把 readerResourceMark 加到 readerResourceMarkAndTaskIdMap 中
             String readerResourceMark = aTaskConfig.getString(CoreConstant.JOB_READER_PARAMETER + "." + CommonConstant.LOAD_BALANCE_RESOURCE_MARK);
-            readerResourceMarkAndTaskIdMap.computeIfAbsent(readerResourceMark, k -> new LinkedList<>());
+            readerResourceMarkAndTaskIdMap.computeIfAbsent(readerResourceMark, k -> new ArrayList<>());
             readerResourceMarkAndTaskIdMap.get(readerResourceMark).add(taskId);
 
             // 把 writerResourceMark 加到 writerResourceMarkAndTaskIdMap 中
             String writerResourceMark = aTaskConfig.getString(CoreConstant.JOB_WRITER_PARAMETER + "." + CommonConstant.LOAD_BALANCE_RESOURCE_MARK);
-            writerResourceMarkAndTaskIdMap.computeIfAbsent(writerResourceMark, k -> new LinkedList<>());
+            writerResourceMarkAndTaskIdMap.computeIfAbsent(writerResourceMark, k -> new ArrayList<>());
             writerResourceMarkAndTaskIdMap.get(writerResourceMark).add(taskId);
         }
 
@@ -171,11 +170,11 @@ public final class JobAssignUtil
         Configuration taskGroupTemplate = jobConfiguration.clone();
         taskGroupTemplate.remove(CoreConstant.JOB_CONTENT);
 
-        List<Configuration> result = new LinkedList<>();
+        List<Configuration> result = new ArrayList<>();
 
         List<List<Configuration>> taskGroupConfigList = new ArrayList<>(taskGroupNumber);
         for (int i = 0; i < taskGroupNumber; i++) {
-            taskGroupConfigList.add(new LinkedList<>());
+            taskGroupConfigList.add(new ArrayList<>());
         }
 
         int mapValueMaxLength = -1;
@@ -200,12 +199,11 @@ public final class JobAssignUtil
                 }
             }
         }
-        Long jobId = taskGroupTemplate.getLong(CoreConstant.CORE_CONTAINER_JOB_ID);
         Configuration tempTaskGroupConfig;
         for (int i = 0; i < taskGroupNumber; i++) {
             tempTaskGroupConfig = taskGroupTemplate.clone();
             tempTaskGroupConfig.set(CoreConstant.JOB_CONTENT, taskGroupConfigList.get(i));
-            tempTaskGroupConfig.set(CoreConstant.CORE_CONTAINER_TASK_GROUP_ID, Integer.parseInt(jobId + "" + i));
+            tempTaskGroupConfig.set(CoreConstant.CORE_CONTAINER_TASK_GROUP_ID, i);
 
             result.add(tempTaskGroupConfig);
         }

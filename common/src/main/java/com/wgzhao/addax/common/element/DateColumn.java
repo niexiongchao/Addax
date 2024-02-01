@@ -24,6 +24,7 @@ import com.wgzhao.addax.common.exception.AddaxException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Date;
 
@@ -35,6 +36,12 @@ public class DateColumn
 {
 
     private DateType subType = DateType.DATETIME;
+
+    private int nanos = 0;
+
+    private int precision = -1;
+
+    private final String errorTemplate = "Date type cannot be converted to %s.";
 
     /**
      * 构建值为null的DateColumn，使用Date子类型为DATETIME
@@ -91,6 +98,34 @@ public class DateColumn
         this.setSubType(DateType.DATETIME);
     }
 
+    public DateColumn(Time time, int nanos, int jdbcPrecision) {
+        this(time);
+        if (time != null) {
+            setNanos(nanos);
+        }
+        if (jdbcPrecision == 10) {
+            setPrecision(0);
+        }
+        if (jdbcPrecision >= 12 && jdbcPrecision <= 17) {
+            setPrecision(jdbcPrecision - 11);
+        }
+    }
+
+    public long getNanos() {
+        return nanos;
+    }
+
+    public void setNanos(int nanos) {
+        this.nanos = nanos;
+    }
+
+    public int getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(int precision) {
+        this.precision = precision;
+    }
     @Override
     public Long asLong()
     {
@@ -107,7 +142,7 @@ public class DateColumn
         catch (Exception e) {
             throw AddaxException.asAddaxException(
                     CommonErrorCode.CONVERT_NOT_SUPPORT,
-                    String.format("Date[%s]类型不能转为String .", this.toString()));
+                    String.format("Date[%s] type cannot be converted to String .", this));
         }
     }
 
@@ -125,28 +160,28 @@ public class DateColumn
     public byte[] asBytes()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Date类型不能转为Bytes .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "Bytes"));
     }
 
     @Override
     public Boolean asBoolean()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Date类型不能转为Boolean .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "Boolean"));
     }
 
     @Override
     public Double asDouble()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Date类型不能转为Double .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "Double"));
     }
 
     @Override
     public BigInteger asBigInteger()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Date类型不能转为BigInteger .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "BigInteger"));
     }
 
     @Override
@@ -162,7 +197,7 @@ public class DateColumn
     public BigDecimal asBigDecimal()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Date类型不能转为BigDecimal .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, String.format(errorTemplate, "BigDecimal"));
     }
 
     public DateType getSubType()

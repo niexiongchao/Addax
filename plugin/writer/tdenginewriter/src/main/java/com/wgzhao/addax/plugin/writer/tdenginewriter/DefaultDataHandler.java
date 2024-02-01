@@ -83,7 +83,7 @@ public class DefaultDataHandler
             Class.forName("com.taosdata.jdbc.rs.RestfulDriver");
         }
         catch (ClassNotFoundException e) {
-            e.printStackTrace();
+           LOG.error(e.getMessage());
         }
     }
 
@@ -343,7 +343,12 @@ public class DefaultDataHandler
             count++;
         }
 
-        SchemalessWriter writer = new SchemalessWriter(conn);
+        SchemalessWriter writer = null;
+        try {
+            writer = new SchemalessWriter(conn);
+        } catch (SQLException e) {
+            throw AddaxException.asAddaxException(TDengineWriterErrorCode.RUNTIME_EXCEPTION, e.getMessage());
+        }
         SchemalessTimestampType timestampType;
         switch (timestampPrecision) {
             case NANOSEC:

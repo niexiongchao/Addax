@@ -49,6 +49,14 @@
         </fileSet>
         <!-- reader -->
         <fileSet>
+            <directory>plugin/reader/accessreader/target/accessreader-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>plugin/reader/cassandrareader/target/cassandrareader-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -58,6 +66,14 @@
         </fileSet>
         <fileSet>
             <directory>plugin/reader/clickhousereader/target/clickhousereader-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>plugin/reader/databendreader/target/databendreader-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -81,7 +97,7 @@
             <outputDirectory>addax-${project.version}</outputDirectory>
         </fileSet>
         <fileSet>
-            <directory>plugin/reader/elastichsearchreader/target/elastichsearchreader-${project.version}/</directory>
+            <directory>plugin/reader/elasticsearchreader/target/elasticsearchreader-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -185,6 +201,14 @@
             <outputDirectory>addax-${project.version}</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>plugin/reader/kafkareader/target/kafkareader-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>plugin/reader/kudureader/target/kudureader-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -273,6 +297,14 @@
             <outputDirectory>addax-${project.version}</outputDirectory>
         </fileSet>
         <fileSet>
+            <directory>plugin/reader/sybasereader/target/sybasereader-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>plugin/reader/tdenginereader/target/tdenginereader-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -291,6 +323,14 @@
 
         <!-- writer -->
         <fileSet>
+            <directory>plugin/writer/accesswriter/target/accesswriter-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
             <directory>plugin/writer/cassandrawriter/target/cassandrawriter-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
@@ -308,6 +348,14 @@
         </fileSet>
         <fileSet>
             <directory>plugin/writer/dbfwriter/target/dbfwriter-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>plugin/writer/databendwriter/target/databendwriter-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>
@@ -515,6 +563,14 @@
         </fileSet>
         <fileSet>
             <directory>plugin/writer/streamwriter/target/streamwriter-${project.version}/</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <fileMode>0644</fileMode>
+            <outputDirectory>addax-${project.version}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>plugin/writer/sybasewriter/target/sybasewriter-${project.version}/</directory>
             <includes>
                 <include>**/*.*</include>
             </includes>

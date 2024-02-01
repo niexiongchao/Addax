@@ -27,10 +27,17 @@ import com.wgzhao.addax.core.transport.transformer.TransformerExecutionParas;
 import com.wgzhao.addax.core.transport.transformer.TransformerInfo;
 import com.wgzhao.addax.core.transport.transformer.TransformerRegistry;
 import com.wgzhao.addax.core.util.container.CoreConstant;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,7 +78,7 @@ public class TransformerUtil
         /*
          * 延迟load 第三方插件的function，并按需load
          */
-        LOG.info(String.format(" user config transformers [%s], loading...", functionNames));
+        LOG.info(String.format("Loading the  user config transformers [%s] ...", functionNames));
         TransformerRegistry.loadTransformerFromLocalStorage(functionNames);
 
         int i = 0;
@@ -96,7 +103,7 @@ public class TransformerUtil
 
                 if (columnIndex == null) {
                     throw AddaxException.asAddaxException(TransformerErrorCode.TRANSFORMER_ILLEGAL_PARAMETER,
-                            "columnIndex must be set by UDF:name=" + functionName);
+                            "columnIndex must be set by UDF: name=" + functionName);
                 }
 
                 transformerExecutionParas.setColumnIndex(columnIndex);
@@ -107,9 +114,29 @@ public class TransformerUtil
             }
             else {
                 String code = configuration.getString(CoreConstant.TRANSFORMER_PARAMETER_CODE);
-                if (StringUtils.isEmpty(code)) {
+                String codeFile = configuration.getString(CoreConstant.TRANSFORMER_PARAMETER_CODE_FILE);
+                if (StringUtils.isAllEmpty(code, codeFile)) {
                     throw AddaxException.asAddaxException(TransformerErrorCode.TRANSFORMER_ILLEGAL_PARAMETER,
-                            "groovy code must be set by UDF:name=" + functionName);
+                            "groovy code or codeFile must be set by UDF: name=" + functionName);
+                }
+                // code and codeFile both setup, prefers to code , ignore codeFile
+                if ( StringUtils.isNoneEmpty(code, codeFile)) {
+                    LOG.warn("Both setup code and codeFile, will pickup code, ignore the codeFile");
+                }
+                if (StringUtils.isNotEmpty(codeFile)) {
+                    // load groovy code from codeFile
+                    // the codeFile default relative path is the same of addax.home properties
+                    File file = new File(codeFile);
+                    if (! file.exists() || ! file.isFile()) {
+                        throw AddaxException.asAddaxException(TransformerErrorCode.TRANSFORMER_CONFIGURATION_ERROR,
+                                "the codeFile [" + codeFile + "]does not exists or is unreadable!");
+                    }
+                    try {
+                        code = FileUtils.readFileToString(file, Charset.defaultCharset());
+                    } catch (IOException e) {
+                        throw AddaxException.asAddaxException(TransformerErrorCode.TRANSFORMER_RUN_EXCEPTION,
+                                "read codeFile [" + codeFile + "] failure:", e);
+                    }
                 }
                 transformerExecutionParas.setCode(code);
 

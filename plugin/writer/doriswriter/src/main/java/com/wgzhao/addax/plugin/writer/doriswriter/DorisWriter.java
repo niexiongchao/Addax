@@ -36,8 +36,6 @@ public class DorisWriter
 
         private Configuration originalConfig = null;
 
-        private DorisWriterEmitter dorisWriterEmitter;
-
         @Override
         public void init()
         {
@@ -47,7 +45,6 @@ public class DorisWriter
             conn.getNecessaryValue(Key.TABLE, DorisWriterErrorCode.REQUIRED_VALUE);
             conn.getNecessaryValue(Key.ENDPOINT, DorisWriterErrorCode.REQUIRED_VALUE);
             conn.getNecessaryValue(Key.DATABASE, DorisWriterErrorCode.REQUIRED_VALUE);
-             this.dorisWriterEmitter = new DorisWriterEmitter(originalConfig);
         }
 
         @Override
@@ -82,14 +79,14 @@ public class DorisWriter
     public static class Task
             extends Writer.Task
     {
-        private DorisWriterTask DorisWriterTask;
+        private DorisWriterTask dorisWriterTask;
 
         @Override
         public void init()
         {
             Configuration writerSliceConfig = getPluginJobConf();
-            this.DorisWriterTask = new DorisWriterTask(writerSliceConfig);
-            this.DorisWriterTask.init();
+            this.dorisWriterTask = new DorisWriterTask(writerSliceConfig);
+            this.dorisWriterTask.init();
         }
 
         @Override
@@ -100,7 +97,7 @@ public class DorisWriter
 
         public void startWrite(RecordReceiver recordReceiver)
         {
-            this.DorisWriterTask.startWrite(recordReceiver, getTaskPluginCollector());
+            this.dorisWriterTask.startWrite(recordReceiver, getTaskPluginCollector());
         }
 
         @Override

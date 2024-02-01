@@ -31,6 +31,8 @@ import com.wgzhao.addax.core.transport.record.TerminateRecord;
 import com.wgzhao.addax.core.util.FrameworkErrorCode;
 import com.wgzhao.addax.core.util.container.CoreConstant;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,8 @@ public class BufferedRecordExchanger
     private final List<Record> buffer;
     private final AtomicInteger memoryBytes = new AtomicInteger(0);
     private final TaskPluginCollector pluginCollector;
+
+    private static final Logger logger = LoggerFactory.getLogger(BufferedRecordExchanger.class);
     private int bufferSize;
     private int bufferIndex = 0;
     private volatile boolean shutdown = false;
@@ -82,7 +86,7 @@ public class BufferedRecordExchanger
     public Record createRecord()
     {
         try {
-            return BufferedRecordExchanger.recordClass.newInstance();
+            return BufferedRecordExchanger.recordClass.getConstructor().newInstance();
         }
         catch (Exception e) {
             throw AddaxException.asAddaxException(FrameworkErrorCode.CONFIG_ERROR, e);
@@ -96,11 +100,11 @@ public class BufferedRecordExchanger
             throw AddaxException.asAddaxException(CommonErrorCode.SHUT_DOWN_TASK, "");
         }
 
-        Validate.notNull(record, "record不能为空.");
+        Validate.notNull(record, "The record cannot be empty.");
 
         if (record.getMemorySize() > this.byteCapacity) {
             this.pluginCollector.collectDirtyRecord(record,
-                    new Exception(String.format("单条记录超过大小限制，当前限制为:%s", this.byteCapacity)));
+                    new Exception(String.format("A single record exceeds the size limit. The current limit is %d", this.byteCapacity)));
             return;
         }
 
@@ -164,7 +168,7 @@ public class BufferedRecordExchanger
             channel.clear();
         }
         catch (Throwable t) {
-            t.printStackTrace();
+            logger.error(t.getMessage());
         }
     }
 

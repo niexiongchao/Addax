@@ -6,7 +6,7 @@ repo_name: wgzhao/addax
 repo_url: https://github.com/wgzhao/Addax
 edit_uri: ""
 
-copyright: Copyright &copy; 2019 - 2021 Steven Zhao
+copyright: Copyright &copy; 2019 - 2023 Steven Zhao
 theme:
   name: material
   language: zh
@@ -16,11 +16,11 @@ theme:
     repo: fontawesome/brands/github
   palette:
     # - primary: blue
-    - scheme: default
+    - scheme: slate
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-    - scheme: slate
+    - scheme: default
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
@@ -40,8 +40,10 @@ nav:
   - quickstart.md
   - setupJob.md
   - 读取插件:
+      - reader/accessreader.md
       - reader/cassandrareader.md
       - reader/clickhousereader.md
+      - reader/databendreader.md
       - reader/datareader.md
       - reader/dbfreader.md
       - reader/elasticsearchreader.md
@@ -57,6 +59,7 @@ nav:
       - reader/influxdbreader.md
       - reader/influxdb2reader.md
       - reader/jsonfilereader.md
+      - reader/kafkareader.md
       - reader/kudureader.md
       - reader/mongodbreader.md
       - reader/mysqlreader.md
@@ -68,14 +71,17 @@ nav:
       - reader/sqlitereader.md
       - reader/sqlserverreader.md
       - reader/streamreader.md
+      - reader/sybasereader.md
       - reader/tdenginereader.md
       - reader/txtfilereader.md
 
   - 写入插件:
+      - writer/accesswriter.md
       - writer/cassandrawriter.md
       - writer/clickhousewriter.md
       - writer/dbfwriter.md
       - writer/doriswriter.md
+      - writer/databendwriter.md
       - writer/elasticsearchwriter.md
       - writer/excelwriter.md
       - writer/ftpwriter.md
@@ -99,6 +105,7 @@ nav:
       - writer/sqlserverwriter.md
       - writer/starrockswriter.md
       - writer/streamwriter.md
+      - writer/sybasewriter.md
       - writer/tdenginewriter.md
       - writer/txtfilewriter.md
   - debug.md
@@ -115,7 +122,10 @@ extra:
       link: https://twitter.com/mlsx
     - icon: fontawesome/brands/github
       link: https://github.com/wgzhao
-
+  analytics:
+    provider: google
+    property:  G-J252L4LHDX
+ 
 # Extensions
 markdown_extensions:
   - admonition

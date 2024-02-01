@@ -43,8 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class LoadUtil
 {
-    private static final String pluginTypeNameFormat = "plugin.%s.%s";
-    private final static Map<Long, Configuration> configurationSet = new ConcurrentHashMap<>();
+    private static Configuration configurationSet;
 
     /*
      * jarLoader的缓冲
@@ -53,11 +52,6 @@ public class LoadUtil
 
     private LoadUtil()
     {
-    }
-
-    public static Map<Long, Configuration> getConfigurationSet()
-    {
-        return configurationSet;
     }
 
     /*
@@ -69,26 +63,22 @@ public class LoadUtil
          * 所有插件配置放置在pluginRegisterCenter中，为区别reader、transformer和writer，还能区别
          * 具体pluginName，故使用pluginType.pluginName作为key放置在该map中
          */
-        Long jobId = pluginConfigs.getLong(CoreConstant.CORE_CONTAINER_JOB_ID);
-        if (jobId == -1) {
-            jobId = (long) 0;
-        }
-        configurationSet.put(jobId, pluginConfigs);
+        configurationSet = pluginConfigs;
     }
 
     private static String generatePluginKey(PluginType pluginType, String pluginName)
     {
-        return String.format(pluginTypeNameFormat, pluginType.toString(), pluginName);
+        return String.format("plugin.%s.%s", pluginType.toString(), pluginName);
     }
 
-    private static Configuration getPluginConf(PluginType pluginType, String pluginName, Long jobId)
+    private static Configuration getPluginConf(PluginType pluginType, String pluginName)
     {
-        Configuration pluginConf = configurationSet.get(jobId).getConfiguration(generatePluginKey(pluginType, pluginName));
+        Configuration pluginConf = configurationSet.getConfiguration(generatePluginKey(pluginType, pluginName));
 
         if (null == pluginConf) {
             throw AddaxException.asAddaxException(
                     FrameworkErrorCode.PLUGIN_INSTALL_ERROR,
-                    String.format("不能找到插件[%s]的配置.", pluginName));
+                    String.format("Can not find the configure of plugin [%s].", pluginName));
         }
 
         return pluginConf;
@@ -97,46 +87,46 @@ public class LoadUtil
     /*
      * 加载JobPlugin，reader、writer都可能要加载
      */
-    public static AbstractJobPlugin loadJobPlugin(PluginType pluginType, String pluginName, Long jobId)
+    public static AbstractJobPlugin loadJobPlugin(PluginType pluginType, String pluginName)
     {
-        Class<? extends AbstractPlugin> clazz = LoadUtil.loadPluginClass(pluginType, pluginName, ContainerType.Job, jobId);
+        Class<? extends AbstractPlugin> clazz = LoadUtil.loadPluginClass(pluginType, pluginName, ContainerType.Job);
 
         try {
-            AbstractJobPlugin jobPlugin = (AbstractJobPlugin) clazz.newInstance();
-            jobPlugin.setPluginConf(getPluginConf(pluginType, pluginName, jobId));
+            AbstractJobPlugin jobPlugin = (AbstractJobPlugin) clazz.getConstructor().newInstance();
+            jobPlugin.setPluginConf(getPluginConf(pluginType, pluginName));
             return jobPlugin;
         }
         catch (Exception e) {
             throw AddaxException.asAddaxException(
                     FrameworkErrorCode.RUNTIME_ERROR,
-                    String.format("找到plugin[%s]的Job配置.", pluginName), e);
+                    String.format("Exception occurred when load job plugin [%s].", pluginName), e);
         }
     }
 
     /*
      * 加载taskPlugin，reader、writer都可能加载
      */
-    public static AbstractTaskPlugin loadTaskPlugin(PluginType pluginType, String pluginName, Long jobId)
+    public static AbstractTaskPlugin loadTaskPlugin(PluginType pluginType, String pluginName)
     {
-        Class<? extends AbstractPlugin> clazz = LoadUtil.loadPluginClass(pluginType, pluginName, ContainerType.Task, jobId);
+        Class<? extends AbstractPlugin> clazz = LoadUtil.loadPluginClass(pluginType, pluginName, ContainerType.Task);
 
         try {
-            AbstractTaskPlugin taskPlugin = (AbstractTaskPlugin) clazz.newInstance();
-            taskPlugin.setPluginConf(getPluginConf(pluginType, pluginName, jobId));
+            AbstractTaskPlugin taskPlugin = (AbstractTaskPlugin) clazz.getConstructor().newInstance();
+            taskPlugin.setPluginConf(getPluginConf(pluginType, pluginName));
             return taskPlugin;
         }
         catch (Exception e) {
             throw AddaxException.asAddaxException(FrameworkErrorCode.RUNTIME_ERROR,
-                    String.format("不能找plugin[%s]的Task配置.", pluginName), e);
+                    String.format("Can not find the configure of task plugin [%s].", pluginName), e);
         }
     }
 
     /*
      * 根据插件类型、名字和执行时taskGroupId加载对应运行器
      */
-    public static AbstractRunner loadPluginRunner(PluginType pluginType, String pluginName, Long jobId)
+    public static AbstractRunner loadPluginRunner(PluginType pluginType, String pluginName)
     {
-        AbstractTaskPlugin taskPlugin = LoadUtil.loadTaskPlugin(pluginType, pluginName, jobId);
+        AbstractTaskPlugin taskPlugin = LoadUtil.loadTaskPlugin(pluginType, pluginName);
 
         switch (pluginType) {
             case READER:
@@ -145,7 +135,7 @@ public class LoadUtil
                 return new WriterRunner(taskPlugin);
             default:
                 throw AddaxException.asAddaxException(FrameworkErrorCode.RUNTIME_ERROR,
-                        String.format("插件[%s]的类型必须是[reader]或[writer]!", pluginName));
+                        String.format("The plugin type must be reader or writer, [%s] is unsupported.", pluginName));
         }
     }
 
@@ -155,10 +145,10 @@ public class LoadUtil
     @SuppressWarnings("unchecked")
     private static synchronized Class<? extends AbstractPlugin> loadPluginClass(
             PluginType pluginType, String pluginName,
-            ContainerType pluginRunType, Long jobId)
+            ContainerType pluginRunType)
     {
-        Configuration pluginConf = getPluginConf(pluginType, pluginName, jobId);
-        JarLoader jarLoader = LoadUtil.getJarLoader(pluginType, pluginName, jobId);
+        Configuration pluginConf = getPluginConf(pluginType, pluginName);
+        JarLoader jarLoader = LoadUtil.getJarLoader(pluginType, pluginName);
         try {
             return (Class<? extends AbstractPlugin>) jarLoader.loadClass(pluginConf.getString("class") + "$"
                     + pluginRunType.value());
@@ -168,15 +158,15 @@ public class LoadUtil
         }
     }
 
-    public static synchronized JarLoader getJarLoader(PluginType pluginType, String pluginName, Long jobId)
+    public static synchronized JarLoader getJarLoader(PluginType pluginType, String pluginName)
     {
-        Configuration pluginConf = getPluginConf(pluginType, pluginName, jobId);
+        Configuration pluginConf = getPluginConf(pluginType, pluginName);
         JarLoader jarLoader = jarLoaderCenter.get(generatePluginKey(pluginType, pluginName));
         if (null == jarLoader) {
             String pluginPath = pluginConf.getString("path");
             if (StringUtils.isBlank(pluginPath)) {
                 throw AddaxException.asAddaxException(FrameworkErrorCode.RUNTIME_ERROR,
-                        String.format("%s插件[%s]路径非法!", pluginType, pluginName));
+                        String.format("Illegal path of plugin [%s] for [%s].",  pluginName, pluginType));
             }
             jarLoader = new JarLoader(new String[] {pluginPath});
             jarLoaderCenter.put(generatePluginKey(pluginType, pluginName), jarLoader);

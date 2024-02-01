@@ -69,56 +69,61 @@ public class BytesColumn
         catch (Exception e) {
             throw AddaxException.asAddaxException(
                     CommonErrorCode.CONVERT_NOT_SUPPORT,
-                    String.format("Bytes[%s]不能转为String .", this.toString()));
+                    String.format("Bytes[%s] cannot be converted to String .", this.toString()));
         }
     }
 
     @Override
     public Long asLong()
     {
-        throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为Long .");
+        long value = 0L;
+        for (byte b : this.asBytes()) {
+            // Shifting previous value 8 bits to right and
+            // add it with next value
+            value = (value << 8) + (b & 255);
+        }
+        return value;
     }
 
     @Override
     public BigDecimal asBigDecimal()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为BigDecimal .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes type cannot converted to BigDecimal.");
     }
 
     @Override
     public BigInteger asBigInteger()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为BigInteger .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes type cannot converted to BigInteger.");
     }
 
     @Override
     public Timestamp asTimestamp()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为Timestamp .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes type cannot converted to Timestamp.");
     }
 
     @Override
     public Double asDouble()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为Long .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes type cannot converted to Long.");
     }
 
     @Override
     public Date asDate()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为Date .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes type cannot converted to Date.");
     }
 
     @Override
     public Boolean asBoolean()
     {
         throw AddaxException.asAddaxException(
-                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes类型不能转为Boolean .");
+                CommonErrorCode.CONVERT_NOT_SUPPORT, "Bytes type cannot converted to Boolean.");
     }
 }

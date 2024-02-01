@@ -13,21 +13,47 @@
             <includes>
                 <include>*.json</include>
             </includes>
+<<<<<<<< HEAD:plugin/writer/tdenginewriter/package.xml
+            <outputDirectory>plugin/writer/${project.artifactId}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/libs</directory>
+            <includes>
+                <include>libtaos.so.*</include>
+            </includes>
+            <outputDirectory>plugin/writer/${project.artifactId}/libs</outputDirectory>
+========
             <outputDirectory>plugin/reader/${project.artifactId}</outputDirectory>
+>>>>>>>> origin/master:plugin/reader/oraclereader/package.xml
         </fileSet>
         <fileSet>
             <directory>target/</directory>
             <includes>
                 <include>${project.artifactId}-${project.version}.jar</include>
             </includes>
+<<<<<<<< HEAD:plugin/writer/tdenginewriter/package.xml
+            <outputDirectory>plugin/writer/${project.artifactId}</outputDirectory>
+========
             <outputDirectory>plugin/reader/${project.artifactId}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>lib/</directory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+            <outputDirectory>plugin/reader/${project.artifactId}/libs</outputDirectory>
+>>>>>>>> origin/master:plugin/reader/oraclereader/package.xml
         </fileSet>
     </fileSets>
 
     <dependencySets>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
+<<<<<<<< HEAD:plugin/writer/tdenginewriter/package.xml
+            <outputDirectory>plugin/writer/${project.artifactId}/libs</outputDirectory>
+========
             <outputDirectory>plugin/reader/${project.artifactId}/libs</outputDirectory>
+>>>>>>>> origin/master:plugin/reader/oraclereader/package.xml
             <scope>runtime</scope>
             <excludes>
                 <exclude>com.wgzhao.addax:*</exclude>

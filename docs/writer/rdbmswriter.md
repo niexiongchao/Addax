@@ -9,6 +9,8 @@ RDBMSWriter 插件支持从传统 RDBMS 读取数据。这是一个通用关系�
 - [PostgreSQL Writer](postgresqlwriter)
 - [ClickHouse Writer](clickhousewriter)
 - [SQLServer Writer](sqlserverwriter)
+- [Access Writer](accesswriter)
+- [Databend Writer](databendwriter)
 
 注意, 如果已经提供了专门的数据库写入插件的，推荐使用专用插件，如果你需要写入的数据库没有专门插件，则考虑使用该通用插件。 在使用之前，还需要执行以下操作才可以正常运行，否则运行会出现异常。
 
@@ -45,17 +47,18 @@ RDBMSWriter 插件支持从传统 RDBMS 读取数据。这是一个通用关系�
 
 ## 参数说明
 
-| 配置项          | 是否必须  | 数据类型 | 默认值 |         描述   |
-| :--------------| :------: | ------ |-------|--------------- |
-| jdbcUrl         |    是    | string | 无     | 对端数据库的JDBC连接信息，jdbcUrl按照RDBMS官方规范，并可以填写连接附件控制信息 ｜
-| driver          |   是     |  string   | 无      | 自定义驱动类名，解决兼容性问题，详见下面描述 |
-| username        |    是    | string | 无     | 数据源的用户名 |
-| password        |    否    | string | 无     | 数据源指定用户名的密码 |
-| table           |    是    | array | 无     | 所选取的需要同步的表名,使用JSON数据格式，当配置为多张表时，用户自己需保证多张表是同一表结构 |
-| column          |    是    | array | 无     |  所配置的表中需要同步的列名集合，详细描述见后 |
-| preSql          |    否    | array | 无     | 执行数据同步任务之前率先执行的sql语句，目前只允许执行一条SQL语句，例如清除旧数据,涉及到的表可用 `@table`表示 |
-| postSql         |   否     | array | 无    | 执行数据同步任务之后执行的sql语句，目前只允许执行一条SQL语句，例如加上某一个时间戳|
-| batchSize       |    否    | int  | 1024   | 定义了插件和数据库服务器端每次批量数据获取条数，调高该值可能导致 Addax 出现OOM或者目标数据库事务提交失败导致挂起 |
+| 配置项    | 是否必须 | 数据类型 | 默认值 | 描述                                                                                                             |
+| :-------- | :------: | -------- | ------ | ---------------------------------------------------------------------------------------------------------------- |
+| jdbcUrl   |    是    | string   | 无     | 对端数据库的JDBC连接信息，jdbcUrl按照RDBMS官方规范，并可以填写连接附件控制信息 ｜                                |
+| driver    |    是    | string   | 无     | 自定义驱动类名，解决兼容性问题，详见下面描述                                                                     |
+| username  |    是    | string   | 无     | 数据源的用户名                                                                                                   |
+| password  |    否    | string   | 无     | 数据源指定用户名的密码                                                                                           |
+| table     |    是    | list     | 无     | 所选取的需要同步的表名,使用JSON数据格式，当配置为多张表时，用户自己需保证多张表是同一表结构                      |
+| column    |    是    | list     | 无     | 所配置的表中需要同步的列名集合，详细描述见后                                                                     |
+| preSql    |    否    | list     | 无     | 执行数据同步任务之前率先执行的sql语句，目前只允许执行一条SQL语句，例如清除旧数据,涉及到的表可用 `@table`表示     |
+| postSql   |    否    | list     | 无     | 执行数据同步任务之后执行的sql语句，目前只允许执行一条SQL语句，例如加上某一个时间戳                               |
+| batchSize |    否    | int      | 1024   | 定义了插件和数据库服务器端每次批量数据获取条数，调高该值可能导致 Addax 出现OOM或者目标数据库事务提交失败导致挂起 |
+| session   |   是否   | list     | 无     | 针对本地连接,修改会话配置,详见下文                                                          |
 
 ### column
 
@@ -82,8 +85,8 @@ Column必须显示填写，不允许为空！
 
 ### jdbcUrl
 
-`jdbcUrl` 配置除了配置必要的信息外，我们还可以在增加每种特定驱动的特定配置属性，这里特别提到我们可以利用配置属性对代理的支持从而实现通过代理访问数据库的功能。 比如对于 PrestoSQL 数据库的 JDBC 驱动而言，支持 `socksProxy`
-参数，比如一个可能的 `jdbcUrl` 为
+`jdbcUrl` 配置除了配置必要的信息外，我们还可以在增加每种特定驱动的特定配置属性，这里特别提到我们可以利用配置属性对代理的支持从而实现通过代理访问数据库的功能。 
+比如对于 PrestoSQL 数据库的 JDBC 驱动而言，支持 `socksProxy` 参数，比如一个可能的 `jdbcUrl` 为
 
 `jdbc:presto://127.0.0.1:8080/hive?socksProxy=192.168.1.101:1081`
 
@@ -99,5 +102,21 @@ Column必须显示填写，不允许为空！
 
 ### driver
 
-大部分情况下，一个数据库的JDBC驱动是固定的，但有些因为版本的不同，所建议的驱动类名不同，比如 MySQL。 新的 MySQL JDBC 驱动类型推荐使用 `com.mysql.cj.jdbc.Driver` 而不是以前的 `com.mysql.jdbc.Drver`
-。如果想要使用就的驱动名称，则可以配置 `driver` 配置项。
+大部分情况下，一个数据库的JDBC驱动是固定的，但有些因为版本的不同，所建议的驱动类名不同，比如 MySQL。 
+新的 MySQL JDBC 驱动类型推荐使用 `com.mysql.cj.jdbc.Driver` 而不是以前的 `com.mysql.jdbc.Drver`。
+如果想要使用就的驱动名称，则可以配置 `driver` 配置项。
+
+
+
+### session
+
+描述：设置数据库连接时的session信息，比如针对 Oracle 数据库，可以设置如下：
+
+```json
+{
+  "session": [
+    "alter session set nls_date_format = 'dd.mm.yyyy hh24:mi:ss';",
+    "alter session set NLS_LANG = 'AMERICAN';"
+  ]
+}
+```

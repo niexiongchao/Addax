@@ -24,9 +24,10 @@ package com.wgzhao.addax.rdbms.util;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.wgzhao.addax.common.base.Constant.SQL_RESERVED_WORDS;
 
 /**
- * refer:http://blog.csdn.net/ring0hx/article/details/6152528
+ * refer:<a href="http://blog.csdn.net/ring0hx/article/details/6152528">...</a>
  */
 public enum DataBaseType
 {
@@ -45,7 +46,10 @@ public enum DataBaseType
     Impala("impala", "com.cloudera.impala.jdbc41.Driver"),
     //    TDengine("tdengine","com.taosdata.jdbc.rs.RestfulDriver"),
     TDengine("tdengine", "com.taosdata.jdbc.TSDBDriver"),
-    Trino("trino", "io.trino.jdbc.TrinoDriver");
+    Trino("trino", "io.trino.jdbc.TrinoDriver"),
+    Sybase("sybase", "com.sybase.jdbc4.jdbc.SybDriver"),
+    Databend("databend", "com.databend.jdbc.DatabendDriver"),
+    Access("access","net.ucanaccess.jdbc.UcanaccessDriver");
 
     private static final Pattern jdbcUrlPattern = Pattern.compile("jdbc:\\w+:(?:thin:url=|//|thin:@|)([\\w\\d.,]+).*");
 
@@ -127,6 +131,29 @@ public enum DataBaseType
             }
         }
         return jdbc;
+    }
+
+    public String quoteColumnName(String columnName)
+    {
+        // if the column is not reserved words , it's constant value
+        if (! SQL_RESERVED_WORDS.contains(columnName.toUpperCase())) {
+            return columnName;
+        }
+        if (this == MySql || this == Hive) {
+            return "`" + columnName.replace("`", "``") + "`";
+        }
+        if (this == Presto || this == Trino || this == Oracle) {
+            return columnName.startsWith("\"") ? columnName: "\"" + columnName + "\"";
+        }
+        if (this == SQLServer) {
+            return columnName.startsWith("[") ? columnName: "[" + columnName + "]";
+        }
+        return columnName;
+    }
+
+    public String quoteTableName(String tableName)
+    {
+        return quoteColumnName(tableName);
     }
 
     public String getTypeName()

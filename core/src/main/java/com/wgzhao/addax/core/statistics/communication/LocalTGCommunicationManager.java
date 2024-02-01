@@ -36,20 +36,13 @@ public final class LocalTGCommunicationManager
         taskGroupCommunicationMap.put(taskGroupId, communication);
     }
 
-    public static Communication getJobCommunication(Long jobId)
+    public static Communication getJobCommunication()
     {
         Communication communication = new Communication();
         communication.setState(State.SUCCEEDED);
 
         for (Communication taskGroupCommunication : taskGroupCommunicationMap.values()) {
-            if (taskGroupCommunication.getJobId() == null) {
-                communication.mergeFrom(taskGroupCommunication);
-            }
-            if (taskGroupCommunication.getJobId() == null || jobId.equals(taskGroupCommunication.getJobId()))
-            {
-                //如JOB在正式启动后过段时间才会设置JobId所以这里把getJobId为空的也合并进去
-                communication.mergeFrom(taskGroupCommunication);        //因为如果为空就说明里面啥都没有合并了也不会影响什么
-            }
+            communication.mergeFrom(taskGroupCommunication);
         }
 
         return communication;
@@ -64,7 +57,7 @@ public final class LocalTGCommunicationManager
      */
     public static Communication getTaskGroupCommunication(int taskGroupId)
     {
-        Validate.isTrue(taskGroupId >= 0, "taskGroupId不能小于0");
+        Validate.isTrue(taskGroupId >= 0, "The number of taskGroupId cannot be less than zero.");
 
         return taskGroupCommunicationMap.get(taskGroupId);
     }
@@ -72,9 +65,9 @@ public final class LocalTGCommunicationManager
     public static void updateTaskGroupCommunication(final int taskGroupId,
             final Communication communication)
     {
-        Validate.isTrue(taskGroupCommunicationMap.containsKey(
-                taskGroupId), String.format("taskGroupCommunicationMap中没有注册taskGroupId[%d]的Communication，" +
-                "无法更新该taskGroup的信息", taskGroupId));
+        Validate.isTrue(taskGroupCommunicationMap.containsKey(taskGroupId),
+                String.format("There is no communication registered for taskGroupId[%d] in taskGroupCommunicationMap," +
+                "Unable to update the information for this taskGroup", taskGroupId));
         taskGroupCommunicationMap.put(taskGroupId, communication);
     }
 

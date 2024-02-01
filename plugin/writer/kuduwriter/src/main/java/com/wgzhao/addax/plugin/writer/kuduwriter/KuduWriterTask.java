@@ -118,11 +118,7 @@ public class KuduWriterTask
                         break;
                     case FLOAT:
                     case DOUBLE:
-                        if(column.asString().contains("Infinity")){
-                            row.addDouble(name, Double.POSITIVE_INFINITY);
-                        }else {
-                            row.addDouble(name, column.asDouble());
-                        }
+                        row.addDouble(name, column.asDouble());
                         break;
                     case STRING:
                         row.addString(name, column.asString());

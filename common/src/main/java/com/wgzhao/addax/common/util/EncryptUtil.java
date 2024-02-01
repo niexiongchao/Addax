@@ -28,14 +28,19 @@
 
 package com.wgzhao.addax.common.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.Base64;
 
 public class EncryptUtil
@@ -43,7 +48,8 @@ public class EncryptUtil
     private static final String SECRET_KEY = "F3M0PxSWod6cyCejYUkpccU9gMsWwgrM";
     private static final String SALT = "G2PuhRinJqKKFcBUT4eMaK3FKMx9iGmx";
 
-    private static final byte[] iv = {1, 1, 4, 5, 1, 5, 0, 6, 0, 1, 8, 9, 6, 4, 0, 0};
+    private static final Logger logger = LoggerFactory.getLogger(EncryptUtil.class);
+
     private static IvParameterSpec ivSpec;
     private static SecretKeySpec secSpec;
     private static Cipher pbeCipher;
@@ -52,22 +58,25 @@ public class EncryptUtil
         try {
             final int iterationCount = 40000;
             final int keyLength = 128;
+            byte[] iv = new byte[16];
+            new SecureRandom().nextBytes(iv);
             ivSpec = new IvParameterSpec(iv);
-            pbeCipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            pbeCipher = Cipher.getInstance("AES/GCM/NoPadding");
             SecretKeyFactory keyFactory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-            PBEKeySpec keySpec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(), iterationCount, keyLength);
+            PBEKeySpec keySpec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(StandardCharsets.UTF_8), iterationCount, keyLength);
             SecretKey keyTmp = keyFactory.generateSecret(keySpec);
             secSpec = new SecretKeySpec(keyTmp.getEncoded(), "AES");
         }
         catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Unknown checked exception occurred: ", e);
         }
     }
 
     public static String encrypt(String password)
     {
         try {
-            pbeCipher.init(Cipher.ENCRYPT_MODE, secSpec, ivSpec);
+            GCMParameterSpec params = new GCMParameterSpec(128, ivSpec.getIV(), 0, 12);
+            pbeCipher.init(Cipher.ENCRYPT_MODE, secSpec, params);
             byte[] cryptoText = pbeCipher.doFinal(password.getBytes(StandardCharsets.UTF_8));
             return base64Encode(cryptoText);
         }
@@ -84,7 +93,8 @@ public class EncryptUtil
     public static String decrypt(String encrypted)
     {
         try {
-            pbeCipher.init(Cipher.DECRYPT_MODE, secSpec, ivSpec);
+            GCMParameterSpec params = new GCMParameterSpec(128, ivSpec.getIV(), 0, 12);
+            pbeCipher.init(Cipher.DECRYPT_MODE, secSpec, params);
             return new String(pbeCipher.doFinal(base64Decode(encrypted)), StandardCharsets.UTF_8);
         }
         catch (Exception e) {
